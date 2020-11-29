@@ -1,18 +1,14 @@
 package GraphAlgorithms;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-
 import AdjacencyList.DirectedGraph;
-import AdjacencyList.DirectedValuedGraph;
-import AdjacencyList.UndirectedValuedGraph;
-import Collection.Triple;
+import Nodes.AbstractNode;
 import Nodes.DirectedNode;
 import Nodes.UndirectedNode;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class GraphToolsList  extends GraphTools {
 
@@ -43,6 +39,58 @@ public class GraphToolsList  extends GraphTools {
 	// ------------------------------------------
 
 	// A completer
+	public static void depthFirstSearch(DirectedGraph graph, AbstractNode start) {
+		HashMap<AbstractNode, Boolean> mark = new HashMap<>();
+		for (AbstractNode node : graph.getNodes()) {
+			mark.put(node, false);
+		}
+		Stack<AbstractNode> toVisit = new Stack<>();
+		toVisit.push(start);
+		while (!toVisit.isEmpty()) {
+			System.out.println(mark);
+			AbstractNode actualNode = toVisit.pop();
+			mark.put(actualNode, true);
+			Map<DirectedNode, Integer> successors = ((DirectedNode) actualNode).getSuccs();
+			for (Map.Entry<DirectedNode, Integer> successor : successors.entrySet()) {
+				if (!mark.get(successor.getKey())) {
+					toVisit.push(successor.getKey());
+				}
+			}
+		}
+
+	}
+
+	public static void breathFirstSearch(DirectedGraph graph, AbstractNode start) {
+
+		HashMap<AbstractNode, Boolean> mark = new HashMap<>();
+		for (AbstractNode node : graph.getNodes()) {
+			mark.put(node, false);
+		}
+		mark.put(start, true);
+		Stack<AbstractNode> toVisit = new Stack<>();
+		toVisit.push(start);
+		while (!toVisit.isEmpty()) {
+			System.out.println(mark);
+			AbstractNode actualNode = toVisit.pop();
+			if (actualNode.getClass() == UndirectedNode.class) {
+				Map<UndirectedNode, Integer> neighbours = ((UndirectedNode) actualNode).getNeighbours();
+				for (Map.Entry<UndirectedNode, Integer> neighbour: neighbours.entrySet()) {
+					if (!mark.get(neighbour.getKey())) {
+						mark.put(neighbour.getKey(), true);
+						toVisit.push(neighbour.getKey());
+					}
+				}
+			} else if (actualNode.getClass() == DirectedNode.class) {
+				Map<DirectedNode, Integer> successors = ((DirectedNode) actualNode).getSuccs();
+				for (Map.Entry<DirectedNode, Integer> successor: successors.entrySet()) {
+					if (!mark.get(successor.getKey())) {
+						mark.put(successor.getKey(), true);
+						toVisit.push(successor.getKey());
+					}
+				}
+			}
+		}
+	}
 
 
 	public static void main(String[] args) {
@@ -52,5 +100,9 @@ public class GraphToolsList  extends GraphTools {
 		System.out.println(al);
 
 		// A completer
+		System.out.println("Depth-First-Search");
+		depthFirstSearch(al, al.getNodes().get(0));
+		System.out.println("Breath-First-Search");
+		breathFirstSearch(al, al.getNodes().get(0));
 	}
 }
