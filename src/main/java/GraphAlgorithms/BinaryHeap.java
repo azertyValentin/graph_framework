@@ -30,14 +30,11 @@ public class BinaryHeap {
     public void insert(int element) {
         int positionElement = this.pos;
         this.nodes[positionElement] = element;
-
-        if (positionElement >= this.nodes.length) {
+        if (positionElement >= this.nodes.length)
             this.resize();
-        }
 
         int positionOfTheParent = this.getPositionOfTheParent(positionElement);
-
-        while(this.nodes[positionOfTheParent] > this.nodes[positionElement] &&  positionOfTheParent >= 0) {
+        while(positionOfTheParent >= 0 && this.nodes[positionOfTheParent] > this.nodes[positionElement]) {
             this.swap(positionOfTheParent, positionElement);
             positionElement = positionOfTheParent;
             positionOfTheParent = this.getPositionOfTheParent(positionElement);

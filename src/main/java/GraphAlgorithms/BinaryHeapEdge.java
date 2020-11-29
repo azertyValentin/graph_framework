@@ -31,7 +31,17 @@ public class BinaryHeapEdge {
 	 * @param val the edge weight
 	 */
     public void insert(UndirectedNode from, UndirectedNode to, int val) {
-    	// To complete
+		Triple<UndirectedNode, UndirectedNode, Integer> edge = new Triple<>(from, to, val);
+		this.binh.add(edge);
+		int positionElement = this.binh.size()-1;
+
+		int positionOfTheParent = this.getPositionOfTheParent(positionElement);
+
+		while(positionOfTheParent >= 0 && this.binh.get(positionOfTheParent).getThird() > this.binh.get(positionElement).getThird()) {
+			this.swap(positionOfTheParent, positionElement);
+			positionElement = positionOfTheParent;
+			positionOfTheParent = this.getPositionOfTheParent(positionElement);
+		}
     }
 
     
@@ -42,11 +52,24 @@ public class BinaryHeapEdge {
 	 * 
 	 */
     public Triple<UndirectedNode,UndirectedNode,Integer> remove() {
-    	// To complete
-    	return null;
+		int lastElementIndex = this.binh.size()-1;
+		this.swap(0, lastElementIndex);
+		this.binh.remove(this.binh.get(lastElementIndex));
+
+		int bestChild = this.getBestChildPos(0);
+		int i = 0;
+		while (bestChild != Integer.MAX_VALUE && this.binh.get(bestChild).getThird() < this.binh.get(i).getThird()) {
+			swap(i, bestChild);
+			i = bestChild;
+			bestChild = this.getBestChildPos(i);
+		}
+		return this.binh.get(0);
         
     }
-    
+
+	private int getPositionOfTheParent(int pos) {
+		return (pos - 1) / 2;
+	}
 
     /**
 	 * From an edge indexed by src, find the child having the least weight and return it
@@ -59,14 +82,17 @@ public class BinaryHeapEdge {
         if (isLeaf(src)) { // the leaf is a stopping case, then we return a default value
             return Integer.MAX_VALUE;
         } else {
-        	// To complete
-        	return Integer.MAX_VALUE;
+			int left = 2 * src + 1;
+			int right = 2 * src + 2;
+			if(right >= lastIndex)
+				return left;
+
+			return this.binh.get(left).getThird() < this.binh.get(right).getThird() ? left : right;
         }
     }
 
     private boolean isLeaf(int src) {
-    	// A completer
-    	return false;
+    	return 2 * src + 1 >= this.binh.size();
     }
 
     
@@ -168,12 +194,17 @@ public class BinaryHeapEdge {
         int max = 20;
         while (k > 0) {
             int rand = min + (int) (Math.random() * ((max - min) + 1));                        
-            jarjarBin.insert(new UndirectedNode(k), new UndirectedNode(k+30), rand);            
+            jarjarBin.insert(new UndirectedNode(k), new UndirectedNode(k+30), rand);
+			jarjarBin.lovelyPrinting();
+			System.out.println("========================");
             k--;
         }
-        // A completer
         
         System.out.println(jarjarBin.test());
+		System.out.println("========== Test remove ==============");
+		System.out.println(jarjarBin.remove());
+		jarjarBin.lovelyPrinting();
+		System.out.println(jarjarBin.test());
     }
 
 }
