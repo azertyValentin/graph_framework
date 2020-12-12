@@ -1,14 +1,14 @@
 package GraphAlgorithms;
 
+import Abstraction.IGraph;
 import AdjacencyList.DirectedGraph;
+import AdjacencyList.DirectedValuedGraph;
+import AdjacencyList.UndirectedValuedGraph;
 import Nodes.AbstractNode;
 import Nodes.DirectedNode;
 import Nodes.UndirectedNode;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class GraphToolsList  extends GraphTools {
 
@@ -92,6 +92,60 @@ public class GraphToolsList  extends GraphTools {
 		}
 	}
 
+	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstra(IGraph graph, AbstractNode start){
+		HashMap<AbstractNode, Integer> costs = new HashMap<>();
+		HashMap<AbstractNode, AbstractNode> previous = new HashMap<>();
+		PriorityQueue<Map.Entry<AbstractNode, Integer>> toVisit = new PriorityQueue<>(Map.Entry.comparingByValue());
+		if (graph.getClass() == DirectedValuedGraph.class) {
+			List<DirectedNode> nodes = ((DirectedValuedGraph) graph).getNodes();
+			for (AbstractNode node : nodes) {
+				costs.put(node, Integer.MAX_VALUE);
+				previous.put(node, null);
+				toVisit.add(new AbstractMap.SimpleEntry(node, Integer.MAX_VALUE));
+			}
+		}
+		if (graph.getClass() == UndirectedValuedGraph.class){
+			List<UndirectedNode> nodes = ((UndirectedValuedGraph) graph).getNodes();
+			for (AbstractNode node : nodes) {
+				costs.put(node, Integer.MAX_VALUE);
+				previous.put(node, null);
+				toVisit.add(new AbstractMap.SimpleEntry(node, Integer.MAX_VALUE));
+			}
+		}
+		costs.put(start, 0);
+		while(!toVisit.isEmpty()){
+			AbstractNode aNode = toVisit.poll().getKey();
+			if (aNode.getClass() == DirectedNode.class) {
+				for (Map.Entry<DirectedNode, Integer> successor: ((DirectedNode) aNode).getSuccs().entrySet()){
+					Integer alt = costs.get(aNode) + successor.getValue();
+					if(alt < costs.get(successor.getKey())){
+						costs.put(successor.getKey(), successor.getValue());
+						previous.put(successor.getKey(), aNode);
+					}
+				}
+			}
+			if(aNode.getClass() == UndirectedNode.class) {
+				for (Map.Entry<UndirectedNode, Integer> successor: ((UndirectedNode) aNode).getNeighbours().entrySet()){
+					Integer alt = costs.get(aNode) + successor.getValue();
+					if(alt < costs.get(successor.getKey())){
+						costs.put(successor.getKey(), successor.getValue());
+						previous.put(successor.getKey(), aNode);
+					}
+				}
+			}
+		}
+		return new Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>>(costs, previous);
+	}
+
+	public static class Pair<T, U> {
+		public final T costs;
+		public final U previous;
+
+		public Pair(T t, U u) {
+			this.costs= t;
+			this.previous= u;
+		}
+	}
 
 	public static void main(String[] args) {
 		int[][] Matrix = GraphTools.generateGraphData(10, 20, false, false, true, 100001);
@@ -104,5 +158,14 @@ public class GraphToolsList  extends GraphTools {
 		depthFirstSearch(al, al.getNodes().get(0));
 		System.out.println("Breath-First-Search");
 		breathFirstSearch(al, al.getNodes().get(0));
+
+		// Djikstra test
+		System.out.println("Djikstra:");
+		int[][] MatrixDjikstra = GraphTools.generateGraphData(5, 20, true, false, true, 100001);
+		DirectedValuedGraph valuedGraph = new DirectedValuedGraph(MatrixDjikstra);
+		System.out.println(valuedGraph.toString());
+		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult = djikstra(valuedGraph, valuedGraph.getNodes().get(0));
+		System.out.println(djikstraResult.costs);
+		System.out.println(djikstraResult.previous);
 	}
 }
