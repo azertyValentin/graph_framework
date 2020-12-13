@@ -137,6 +137,73 @@ public class GraphToolsList  extends GraphTools {
 		return new Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>>(costs, previous);
 	}
 
+	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellman(IGraph graph, AbstractNode start) throws Exception {
+		HashMap<AbstractNode, Integer> costs = new HashMap<>();
+		HashMap<AbstractNode, AbstractNode> previous = new HashMap<>();
+		if (graph.getClass() == DirectedValuedGraph.class) {
+			List<DirectedNode> nodes = ((DirectedValuedGraph) graph).getNodes();
+			for (AbstractNode node : nodes) {
+				costs.put(node, Integer.MAX_VALUE);
+				previous.put(node, null);
+			}
+		}
+		if (graph.getClass() == UndirectedValuedGraph.class){
+			List<UndirectedNode> nodes = ((UndirectedValuedGraph) graph).getNodes();
+			for (AbstractNode node : nodes) {
+				costs.put(node, Integer.MAX_VALUE);
+				previous.put(node, null);
+			}
+		}
+		LinkedList<AbstractNode> nodesToConsider = new LinkedList<>();
+		costs.put(start, 0);
+		nodesToConsider.add(start);
+		Integer nbIterations = 0;
+		if (graph.getClass() == DirectedValuedGraph.class) {
+			nbIterations = ((DirectedValuedGraph) graph).getNbArcs() - 1;
+		}
+		if (graph.getClass() == UndirectedValuedGraph.class) {
+			nbIterations = ((UndirectedValuedGraph) graph).getNbEdges() - 1;
+		}
+		HashMap<AbstractNode, Integer> savedCosts = new HashMap<>();;
+		HashMap<AbstractNode, AbstractNode> savedPrevious = new HashMap<>();;
+		// Nous faisons une itération de plus afin de vérifier qu'il n'y a pas de cycle négatif
+		for(int i = 0; i<=nbIterations; i++){
+			if (i == nbIterations){
+				savedCosts = (HashMap<AbstractNode, Integer>) costs.clone();
+				savedPrevious = (HashMap<AbstractNode, AbstractNode>) previous.clone();
+			}
+			if (graph.getClass() == DirectedValuedGraph.class) {
+				for (AbstractNode node: nodesToConsider
+				) {
+					for(Map.Entry<DirectedNode, Integer> succ : ((DirectedNode)node).getSuccs().entrySet()){
+						Integer newCost = succ.getValue() + costs.get(node);
+						if(newCost < costs.get(succ.getKey())){
+							costs.put(succ.getKey(), newCost);
+							previous.put(succ.getKey(), node);
+						}
+					}
+				}
+			}
+			if (graph.getClass() == UndirectedValuedGraph.class) {
+				for (AbstractNode node: nodesToConsider
+				) {
+					for(Map.Entry<UndirectedNode, Integer> succ : ((UndirectedNode)node).getNeighbours().entrySet()){
+						Integer newCost = succ.getValue() + costs.get(node);
+						if(newCost < costs.get(succ.getKey())){
+							costs.put(succ.getKey(), newCost);
+							previous.put(succ.getKey(), node);
+						}
+					}
+				}
+			}
+			if (i == nbIterations){
+				if(!savedCosts.equals(costs) || !savedPrevious.equals(previous))
+					throw new Exception("Présence d'un cycle négatif");
+			}
+		}
+		return new Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>>(costs, previous);
+	}
+
 	public static class Pair<T, U> {
 		public final T costs;
 		public final U previous;
@@ -154,18 +221,49 @@ public class GraphToolsList  extends GraphTools {
 		System.out.println(al);
 
 		// A completer
-		System.out.println("Depth-First-Search");
+		System.out.println("\nDepth-First-Search");
 		depthFirstSearch(al, al.getNodes().get(0));
-		System.out.println("Breath-First-Search");
+		System.out.println("\nBreath-First-Search");
 		breathFirstSearch(al, al.getNodes().get(0));
 
 		// Djikstra test
-		System.out.println("Djikstra:");
+		System.out.println("\nDjikstra (Directed Graph):");
 		int[][] MatrixDjikstra = GraphTools.generateGraphData(5, 20, true, false, true, 100001);
 		DirectedValuedGraph valuedGraph = new DirectedValuedGraph(MatrixDjikstra);
 		System.out.println(valuedGraph.toString());
 		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult = dijkstra(valuedGraph, valuedGraph.getNodes().get(0));
 		System.out.println(djikstraResult.costs);
 		System.out.println(djikstraResult.previous);
+
+		System.out.println("\nDjikstra (Undirected Graph):");
+		UndirectedValuedGraph undirectedValuedGraph = new UndirectedValuedGraph(MatrixDjikstra);
+		System.out.println(undirectedValuedGraph.toString());
+		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult2 = dijkstra(undirectedValuedGraph, undirectedValuedGraph.getNodes().get(0));
+		System.out.println(djikstraResult2.costs);
+		System.out.println(djikstraResult2.previous);
+
+		// Bellman test
+		System.out.println("\nBellman (Directed Graph):");
+		int[][] MatrixBellman = GraphTools.generateGraphData(4, 20, true, false, true, 100001);
+		DirectedValuedGraph valuedGraphBellman = new DirectedValuedGraph(MatrixBellman);
+		System.out.println(valuedGraphBellman.toString());
+		try {
+			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellmanResult = bellman(valuedGraphBellman, valuedGraphBellman.getNodes().get(0));
+			System.out.println(bellmanResult.costs);
+			System.out.println(bellmanResult.previous);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("\nBellman (Undirected Graph):");
+		UndirectedValuedGraph undirectedValuedGraphBellman = new UndirectedValuedGraph(MatrixBellman);
+		System.out.println(undirectedValuedGraphBellman.toString());
+		try {
+			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellmanResult2 = bellman(undirectedValuedGraphBellman, undirectedValuedGraphBellman.getNodes().get(0));
+			System.out.println(bellmanResult2.costs);
+			System.out.println(bellmanResult2.previous);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
