@@ -92,7 +92,7 @@ public class GraphToolsList  extends GraphTools {
 		}
 	}
 
-	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstra(IGraph graph, AbstractNode start){
+	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> dijkstra(IGraph graph, AbstractNode start){
 		HashMap<AbstractNode, Integer> costs = new HashMap<>();
 		HashMap<AbstractNode, AbstractNode> previous = new HashMap<>();
 		PriorityQueue<Map.Entry<AbstractNode, Integer>> toVisit = new PriorityQueue<>(Map.Entry.comparingByValue());
@@ -164,7 +164,7 @@ public class GraphToolsList  extends GraphTools {
 		int[][] MatrixDjikstra = GraphTools.generateGraphData(5, 20, true, false, true, 100001);
 		DirectedValuedGraph valuedGraph = new DirectedValuedGraph(MatrixDjikstra);
 		System.out.println(valuedGraph.toString());
-		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult = djikstra(valuedGraph, valuedGraph.getNodes().get(0));
+		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult = dijkstra(valuedGraph, valuedGraph.getNodes().get(0));
 		System.out.println(djikstraResult.costs);
 		System.out.println(djikstraResult.previous);
 	}
