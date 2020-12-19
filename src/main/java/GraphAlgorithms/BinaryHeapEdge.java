@@ -63,7 +63,7 @@ public class BinaryHeapEdge {
 			i = bestChild;
 			bestChild = this.getBestChildPos(i);
 		}
-		return this.binh.get(0);
+		return !this.isEmpty() ? this.binh.get(0) : null;
         
     }
 

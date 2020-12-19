@@ -7,6 +7,7 @@ import AdjacencyList.UndirectedValuedGraph;
 import Nodes.AbstractNode;
 import Nodes.DirectedNode;
 import Nodes.UndirectedNode;
+import Collection.Triple;
 
 import java.util.*;
 
@@ -137,7 +138,7 @@ public class GraphToolsList  extends GraphTools {
 		return new Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>>(costs, previous);
 	}
 
-	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellman(IGraph graph, AbstractNode start) throws Exception {
+	public static Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> belmann(IGraph graph, AbstractNode start) throws Exception {
 		HashMap<AbstractNode, Integer> costs = new HashMap<>();
 		HashMap<AbstractNode, AbstractNode> previous = new HashMap<>();
 		if (graph.getClass() == DirectedValuedGraph.class) {
@@ -205,13 +206,41 @@ public class GraphToolsList  extends GraphTools {
 	}
 
 	public static class Pair<T, U> {
-		public final T costs;
-		public final U previous;
+		public final T t;
+		public final U p;
 
 		public Pair(T t, U u) {
-			this.costs= t;
-			this.previous= u;
+			this.t= t;
+			this.p= u;
 		}
+	}
+
+	public static Pair<List<UndirectedNode>, Integer> prim(UndirectedValuedGraph graph, UndirectedNode start){
+		BinaryHeapEdge binaryHeapEdge = new BinaryHeapEdge();
+		int cost = 0;
+		List<UndirectedNode> visited = new ArrayList<>();
+		visited.add(start);
+
+		UndirectedNode currentNode = start;
+		int i = 0;
+		while (i < graph.getNbNodes()-1) {
+			for (Map.Entry<UndirectedNode, Integer> neighbour : currentNode.getNeighbours().entrySet()) {
+				binaryHeapEdge.insert(currentNode, neighbour.getKey(), neighbour.getValue());
+			}
+
+			Triple<UndirectedNode, UndirectedNode, Integer> edge = binaryHeapEdge.remove();
+			// si on a déja visité le noeud voison, on retire l'edge du tas
+			while (visited.contains(edge.getSecond())) {
+				edge = binaryHeapEdge.remove();
+			}
+
+			currentNode = edge.getSecond();
+			cost += edge.getThird();
+			visited.add(currentNode);
+			i++;
+		}
+
+		return new Pair<>(visited, cost);
 	}
 
 	public static void main(String[] args) {
@@ -232,38 +261,47 @@ public class GraphToolsList  extends GraphTools {
 		DirectedValuedGraph valuedGraph = new DirectedValuedGraph(MatrixDjikstra);
 		System.out.println(valuedGraph.toString());
 		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult = dijkstra(valuedGraph, valuedGraph.getNodes().get(0));
-		System.out.println(djikstraResult.costs);
-		System.out.println(djikstraResult.previous);
+		System.out.println(djikstraResult.t);
+		System.out.println(djikstraResult.p);
 
 		System.out.println("\nDjikstra (Undirected Graph):");
 		UndirectedValuedGraph undirectedValuedGraph = new UndirectedValuedGraph(MatrixDjikstra);
 		System.out.println(undirectedValuedGraph.toString());
 		Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> djikstraResult2 = dijkstra(undirectedValuedGraph, undirectedValuedGraph.getNodes().get(0));
-		System.out.println(djikstraResult2.costs);
-		System.out.println(djikstraResult2.previous);
+		System.out.println(djikstraResult2.t);
+		System.out.println(djikstraResult2.p);
 
-		// Bellman test
-		System.out.println("\nBellman (Directed Graph):");
-		int[][] MatrixBellman = GraphTools.generateGraphData(4, 20, true, false, true, 100001);
-		DirectedValuedGraph valuedGraphBellman = new DirectedValuedGraph(MatrixBellman);
-		System.out.println(valuedGraphBellman.toString());
+		// Belmann test
+		System.out.println("\nBelmann (Directed Graph):");
+		int[][] MatrixBelmann = GraphTools.generateGraphData(4, 20, true, false, true, 100001);
+		DirectedValuedGraph valuedGraphBelmann = new DirectedValuedGraph(MatrixBelmann);
+		System.out.println(valuedGraphBelmann.toString());
 		try {
-			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellmanResult = bellman(valuedGraphBellman, valuedGraphBellman.getNodes().get(0));
-			System.out.println(bellmanResult.costs);
-			System.out.println(bellmanResult.previous);
+			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> belmannResult = belmann(valuedGraphBelmann, valuedGraphBelmann.getNodes().get(0));
+			System.out.println(belmannResult.t);
+			System.out.println(belmannResult.p);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		System.out.println("\nBellman (Undirected Graph):");
-		UndirectedValuedGraph undirectedValuedGraphBellman = new UndirectedValuedGraph(MatrixBellman);
-		System.out.println(undirectedValuedGraphBellman.toString());
+		System.out.println("\nBelmann (Undirected Graph):");
+		UndirectedValuedGraph undirectedValuedGraphBelmann = new UndirectedValuedGraph(MatrixBelmann);
+		System.out.println(undirectedValuedGraphBelmann.toString());
 		try {
-			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> bellmanResult2 = bellman(undirectedValuedGraphBellman, undirectedValuedGraphBellman.getNodes().get(0));
-			System.out.println(bellmanResult2.costs);
-			System.out.println(bellmanResult2.previous);
+			Pair<HashMap<AbstractNode, Integer>, HashMap<AbstractNode, AbstractNode>> belmannResult2 = belmann(undirectedValuedGraphBelmann, undirectedValuedGraphBelmann.getNodes().get(0));
+			System.out.println(belmannResult2.t);
+			System.out.println(belmannResult2.p);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		// Prim test
+		System.out.println("\nPrim:");
+		int[][] MatrixPrim = GraphTools.generateGraphData(4, 20, true, false, true, 10001);
+		UndirectedValuedGraph valuedGraphPrim = new UndirectedValuedGraph(MatrixPrim);
+		System.out.println(valuedGraphPrim.toString());
+		Pair<List<UndirectedNode>, Integer> primResult = prim(valuedGraphPrim, valuedGraphPrim.getNodes().get(0));
+		System.out.println(primResult.t);
+		System.out.println(primResult.p);
 	}
 }
